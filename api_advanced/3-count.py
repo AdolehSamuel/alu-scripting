@@ -3,7 +3,7 @@
 import requests
 
 
-def count_words(subreddit, word_list, after="", words_count={}):
+def count_words(subreddit, word_list, after="", wd_ct={}):
     """ "Doc"""
     url = "https://www.reddit.com/r/{}/hot.json?limit=100".format(subreddit)
     header = {"User-Agent": "Mozilla/5.0"}
@@ -19,27 +19,28 @@ def count_words(subreddit, word_list, after="", words_count={}):
     hot_titles = []
     words = [word.lower() for word in word_list]
 
-    if len(words_count) == 0:
-        words_count = {word: 0 for word in words}
+    if len(wd_ct) == 0:
+        wd_ct = {word: 0 for word in words}
 
     hot_articles = json_res.get("data").get("children")
-    [hot_titles.append(article.get("data").get("title")) for article in hot_articles]
+    for article in hot_articles:
+        hot_titles.append(article.get("data").get("title"))
 
     # loop through all titles
     for i in range(len(hot_titles)):
         for title_word in hot_titles[i].lower().split():
             for word in words:
                 if word.lower() == title_word:
-                    words_count[word] = words_count.get(word) + 1
+                    wd_ct[word] = wd_ct.get(word) + 1
 
     if has_next:
-        return count_words(subreddit, word_list, after, words_count)
+        return count_words(subreddit, word_list, after, wd_ct)
     else:
-        words_count = dict(filter(lambda item: item[1] != 0, words_count.items()))
+        wd_ct = dict(filter(lambda item: item[1] != 0, wd_ct.items()))
 
-        words_count = sorted(
-            words_count.items(), key=lambda item: item[1], reverse=True
+        wd_ct = sorted(
+            wd_ct.items(), key=lambda item: item[1], reverse=True
         )
 
-        for i in range(len(words_count)):
-            print("{}: {}".format(words_count[i][0], words_count[i][1]))
+        for i in range(len(wd_ct)):
+            print("{}: {}".format(wd_ct[i][0], wd_ct[i][1]))
